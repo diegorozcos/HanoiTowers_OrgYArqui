@@ -1,106 +1,117 @@
+# Diego Arturo Orozco Sánchez   Isaac Ramírez Robles Castillo
 .text
 main:
-    addi s1, zero, 3  # Inicializa s1 con 3, que representa el número de discos
-    addi a1, zero, 1  # Inicializa a1 con 1
-    slli a1, a1, 28   # Desplaza a1 a la izquierda para obtener la dirección de la primera torre
-    addi t0, zero, 1  # Inicializa t0 con 1
-    slli t0, t0, 16   # Desplaza t0 a la izquierda para definir una dirección de memoria
-    add a1, a1, t0   # Calcula la dirección de la primera torre
-    addi t0, zero, 3  # Inicializa t0 con 3, que representa el número de discos
-    add t1, zero, a1  # Copia la dirección de la primera torre a t1
-    jal iniciarTorre  # Salta a la función iniciarTorre
-    sw zero, 0(sp)  # Almacena 0 en la pila
-    addi sp, sp, 4  # Ajusta el puntero de pila
-    addi a3, a3, 4  # Incrementa a3 en 4 para obtener la dirección de la tercera torre
-    addi t0, zero, 3  # Inicializa t0 con 3
-    addi t5, t0, -1  # Inicializa t5 con 2
-    slli t5, t5, 2  # Multiplica t5 por 4
-    add a2, a2, t5  # Calcula la dirección de la segunda torre
-    addi a2, a2, 4  # Incrementa a2 en 4 bytes
-    add a3, a3, t5  # Calcula la dirección de la tercera torre
-    addi a3, a3, 4  # Incrementa a3 en 4 bytes
-    add t1, zero, a1  # Copia la dirección de la primera torre a t1
-    add t2, zero, a2  # Copia la dirección de la segunda torre a t2
-    add t3, zero, a3  # Copia la dirección de la tercera torre a t3
-    jal hanoi  # Salta a la función hanoi
-    jal fin  # Salta a la función fin
-
-iniciarTorre:
-    beq t0, zero, torre2  # Comprueba si t0 (número de discos) es igual a 0 y salta a torre2 si es cierto
-    addi sp, sp, -4  # Reserva espacio en la pila
-    sw ra, 0(sp)  # Guarda el valor de ra (registro de retorno) en la pila
-    addi t2, t2, 1  # Incrementa t2 (torre de origen)
-    sw t2, 0(t1)  # Almacena el valor de la torre de origen en la dirección apuntada por t1
-    addi t1, t1, 4  # Incrementa t1 para apuntar a la siguiente posición de memoria
-    addi t0, t0, -1  # Decrementa t0 (número de discos) en 1
-    jal iniciarTorre  # Llama recursivamente a iniciarTorre
-salirIni:
-    lw ra, 4(sp)  # Carga el valor de ra desde la pila
-    addi t1, t1, 4  # Incrementa t1 para apuntar a la siguiente posición de memoria
-    add a3, zero, t1  # Copia la dirección de t1 en a3
-    add t5, zero, zero  # Inicializa t5 con 0
-    sw t5, 0(sp)  # Almacena 0 en la pila
-    addi sp, sp, 4  # Ajusta el puntero de pila
-    jalr ra  # Retorna desde la función anterior
-
-torre2:
-    add a2, zero, t1  # Copia la dirección de t1 en a2 (torre de origen)
-    addi t1, t1, 4  # Incrementa t1 para apuntar al inicio de la segunda torre
-    lw ra, 4(sp)  # Carga el valor de ra desde la pila
-    add t5, zero, zero  # Inicializa t5 con 0
-    sw t5, 0(sp)  # Almacena 0 en la pila
-    sw t5, 4(sp)  # Almacena 0 en la pila
-    addi sp, sp, 4  # Ajusta el puntero de pila
-    jalr ra  # Retorna desde la función anterior
+	# // Aquí se inician los valores que se necesitan para que todo funcione
+	lui s1, 0x10010		# Primera dirección de la RAM para inicializar la torre 1
+	addi t1, zero, 1	# Caso default del problema de Hanoi
+	addi t2, zero, 3	# Cantidad de discos a utilizar en el programa
+	slli s0, t2, 2		# Equivalente a multiplicar por 4
+	add s2, s1, s0		# Torre auxiliar
+	add s3, s2, s0		# Torre destino
+	addi t3, zero, 0	# Variable para contar los movimientos que se realizan
+	addi s4, zero, 1	# Variable para la i del ciclo for para llenar los discos (empieza en 1)
+	addi s5, zero, 0	# Almacenar ra
+	
+	addi s2, s2, -4
+	addi s3, s3, -4		# Mueve el apuntador a ambas torres (la auxiliar y la destino)
+	
+	for:
+		blt t2, s4, endfor	# for (int i = 1; i < n; i++)
+		sw s4, 0(s1)
+		addi s1, s1, 4		# Avanza 4 bits para representar la siguiente posición
+		addi s2, s2, 4
+		addi s3, s3, 4
+		addi s4, s4, 1		# i++ del ciclo
+		jal for
+	
+	endfor:
+		addi s1, s1, -4		# Apuntador a la primera torre
+		
+		jal hanoi		# Se llama a hanoi después de inicializar los discos
+		
+		jal exit		# Sale del algoritmo
 
 hanoi:
-    bne t0, zero, hanoiLoop  # Comprueba si t0 (número de discos) es diferente de 0 y salta a hanoiLoop si es cierto
-    jalr ra  # Retorna desde la función hanoi
+	# Primero buscamos tener el caso default donde solo tenemos un disco
+	bne t2, t1, else	# Cuando n != 1
+	add s5, zero, ra	# Guarda el valor en el ra
+	
+	# swapDisk(src_rod, to_rod)
+	sw zero, 0(s1) 		# Pop al disco
+	sw t2, 0(s3)		# Push al disco
+	addi t3, t3, 1		# Contador de movimientos
+	
+	add ra, zero, s5
+	jalr ra
+	nop
 
-hanoiLoop:
-    addi sp, sp, -8  # Reserva espacio en la pila para la recursión
-    sw ra, 4(sp)  # Guarda el valor de ra en la pila
-    sw t0, 0(sp)  # Guarda el valor de t0 en la pila
-    addi t0, t0, -1  # Decrementa t0 (número de discos) en 1
-    add t4, zero, t2  # Copia t2 en t4
-    add t2, zero, t3  # Copia t3 en t2
-    add t3, zero, t4  # Copia t4 en t3
-    jal hanoi  # Llama recursivamente a hanoi
-
-    # Mover disco
-    lw t0, 0(sp)  # Carga el valor de t0 desde la pila
-    lw ra, 4(sp)  # Carga el valor de ra desde la pila
-    sw zero, 0(sp)  # Borra los valores de la pila
-    sw zero, 4(sp)  # Borra los valores de la pila
-    addi sp, sp, 8  # Ajusta el puntero de pila
-    add t4, zero, t2  # Copia t2 en t4
-    add t2, zero, t3  # Copia t3 en t2
-    add t3, zero, t4  # Copia t4 en t3
-    addi t3, t3, -4  # Realiza un ajuste en la dirección de memoria
-    lw t4, 0(t1)  # Carga el valor de la torre de origen
-    sw t4, 0(t3)  # Almacena el valor en la nueva ubicación
-    sw zero, 0(t1)  # Borra el valor en la torre de origen
-    addi t1, t1, 4  # Incrementa t1 para apuntar a la siguiente posición de memoria
-
-    # Continuación de la recursión
-    addi sp, sp, -8  # Reserva espacio en la pila
-    sw ra, 4(sp)  # Guarda el valor de ra en la pila
-    sw t0, 0(sp)  # Guarda el valor de t0 en la pila
-    add t4, zero, t2  # Copia t2 en t4
-    add t2, zero, t1  # Copia t1 en t2
-    add t1, zero, t4  # Copia t4 en t1
-    jal hanoi  # Llama recursivamente a hanoi
-
-    # Restauración del contexto anterior
-    lw t0, 0(sp)  # Carga el valor de t0 desde la pila
-    lw ra, 4(sp)  # Carga el valor de ra desde la pila
-    sw zero, 0(sp)  # Borra los valores de la pila
-    sw zero, 4(sp)  # Borra los valores de la pila
-    addi sp, sp, 8  # Ajusta el puntero de pila
-    add t4, zero, t2  # Copia t2 en t4
-    add t2, zero, t1  # Copia t1 en t2
-    add t1, zero, t4  # Copia t4 en t1
-    jalr ra  # Retorna desde la función anterior
-
-fin:
-    add zero, zero, zero  # Fin del programa
+else:
+	# Aquí ya empieza la verdadera recursión del problema
+	# Primero reservamos 20 bits para la n de los discos, el ra y las 3 torres
+	# Cada uno de ellos necesita 4 bits -> 4 * 5 = 20 bits iniciales
+	
+	addi sp, sp, -20
+	sw t2, 0(sp)	# Espacio para el número de discos
+	sw ra, 4(sp)	# Espacio para el ra
+	sw s1, 8(sp)	# Espacio para la primera torre
+	sw s2, 12(sp)	# Espacio para la segunda torre
+	sw s3, 16(sp)	# Espacio para la tercer torre
+	
+	# Mover la posición en base a n
+	addi t2, t2, -1		# n - 1 de los discos
+	addi s1, s1, -4		# Apuntadores a las posiciones
+	addi s2, s2, -4
+	addi s3, s3, -4
+	
+	# hanoi(n - 1, src_rod, to_rod, aux_rod);
+	addi s6, s2, 0 		# Se hace el swap de las posiciones como en bubble sort
+	addi s2, s3, 0
+	addi s3, s6, 0
+	
+	jal hanoi		# Primera llamada recursiva
+	
+	# Debemos hacer el pop de la memoria para restaurarla
+	lw t2, 0(sp)
+	lw ra, 4(sp)
+	lw s1, 8(sp)
+	lw s2, 12(sp)
+	lw s3, 16(sp)
+	addi sp, sp, 20
+	
+	# swapDisk(src_rod, to_rod)
+	sw zero, 0(s1) 		# Pop al disco
+	sw t2, 0(s3)		# Push al disco
+	addi t3, t3, 1		# Contador de movimientos
+	
+	# Inicio de la segunda recursión
+	# Volvemos a hacer la reservación de memoria para la segunda recursión
+	addi sp, sp, -20
+	sw t2, 0(sp)
+	sw ra, 4(sp)
+	sw s1, 8(sp)
+	sw s2, 12(sp)
+	sw s3, 16(sp)
+	
+	# hanoi(n - 1, aux_rod, src_rod, to_rod);
+	addi t2, t2, -1		# n - 1 de los discos
+	addi s6, s1, 0 		# Se hace el swap de las posiciones como en bubble sort
+	addi s1, s2, 0
+	addi s2, s6, 0
+	
+	addi s1, s1, -4		# Mover los apuntadores con respecto a n
+	addi s2, s2, -4
+	addi s3, s3, -4
+	
+	jal hanoi		# Segunda recursión
+	
+	# Volvemos a hacer el pop de la memoria para volverla a restaurar
+	lw t2, 0(sp)
+	lw ra, 4(sp)
+	lw s1, 8(sp)
+	lw s2, 12(sp)
+	lw s3, 16(sp)
+	addi sp, sp, 20
+	
+	jalr ra			# Retornamos el valor
+	
+exit: nop
