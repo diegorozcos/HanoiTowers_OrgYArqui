@@ -17,7 +17,7 @@ main:
 	
 	for:
 		blt t2, s4, endfor	# for (int i = 1; i < n; i++)
-		sw s4, 0(s1)
+		sw s4, 0(s1)		# Simula el printf para mostrar los discos
 		addi s1, s1, 4		# Avanza 4 bits para representar la siguiente posición
 		addi s2, s2, 4
 		addi s3, s3, 4
@@ -41,8 +41,8 @@ hanoi:
 	sw t2, 0(s3)		# Push al disco
 	addi t3, t3, 1		# Contador de movimientos
 	
-	add ra, zero, s5
-	jalr ra
+	add ra, zero, s5 	# Se suma en ra, que es el valor que se retorna
+	jalr ra			# Retorno del valor
 	nop
 
 else:
