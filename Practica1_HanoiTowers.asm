@@ -4,7 +4,7 @@ main:
 	# // Aquí se inician los valores que se necesitan para que todo funcione
 	lui s1, 0x10010		# Primera dirección de la RAM para inicializar la torre 1
 	addi t1, zero, 1	# Caso default del problema de Hanoi
-	addi t2, zero, 3	# Cantidad de discos a utilizar en el programa
+	addi t2, zero, 8	# Cantidad de discos a utilizar en el programa
 	slli s0, t2, 2		# Equivalente a multiplicar por 4
 	add s2, s1, s0		# Torre auxiliar
 	add s3, s2, s0		# Torre destino
